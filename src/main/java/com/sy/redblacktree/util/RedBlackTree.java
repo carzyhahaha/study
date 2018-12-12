@@ -16,22 +16,29 @@ public class RedBlackTree<T> {
     // 或许这并不是一颗红黑树...
     private static final int UNMATCH = -1;
 
-    // 如果是根节点, 直接涂黑
+    // 如果是根节点, 直接插红
     private static final int RULE0 = 0;
 
     // 如果父节点为黑色, 无论在那一支添加节点都不会违反红黑树的五个性质
     private static final int RULE1 = 1;
 
-    // 如果父亲节点为红色, 叔叔节点为红色, 且插入点为右支是, 先对父节点进行左旋
+    // 如果父亲节点为红色, 且为左支, 叔叔节点为黑色, 且插入点为左支时, 祖父与父亲换色, 右旋
     private static final int RULE2 = 2;
 
-    // 如果父亲节点为红色, 叔叔节点为红色, 且插入点为左支是, 应该交换祖父和父节点的颜色然后以父节点右旋
-    // 如果我们把原先的父节点看做是新的要插入的节点，把原先要插入的节点看做是新的父节点，那就变成了RULE2的情况
+    // 如果父亲节点为红色, 且为右支, 叔叔节点为黑色, 且插入点为右支时 与RULE2为镜像, 祖父与父亲换色, 左旋
     private static final int RULE3 = 3;
+
+    // 如果父亲节点为红色, 且为左支, 叔叔节点为黑色, 且插入点为右支时, 应该先以父节点左旋
+    // 把原先的父节点看做是新的要插入的节点，把原先要插入的节点看做是新的父节点，那就变成了RULE2的情况
+    private static final int RULE4 = 4;
+
+    // 如果父亲节点为红色, 且为右支, 叔叔节点为黑色, 且插入点为左支时, 应该先以父节点右旋
+    // 把原先的父节点看做是新的要插入的节点，把原先要插入的节点看做是新的父节点，那就变成了RULE3的情况
+    private static final int RULE5 = 5;
 
     // 如果父亲节点为红色, 叔叔节点为红色, 吧祖父节点和父. 叔叔节点交换颜色,
     // 再把祖父节点看作插入的点, 调整树重新符合红黑树性质
-    private static final int RULE4 = 4;
+//    private static final int RULE4 = 4;
 
     private TreeNode<T> root;
 
@@ -74,6 +81,8 @@ public class RedBlackTree<T> {
                     leftRotate(fartherNode, children);
                 }
 
+            } else if (Objects.equals(rule, RULE3)) {
+
             }
             return true;
         }
@@ -84,26 +93,33 @@ public class RedBlackTree<T> {
 
     private int matchRule(TreeNode fartherNode, TreeNode children) {
 
-        if (fartherNode == null) {
+        TreeNode grandFartherNode = fartherNode.getFartherNode();
+
+        if (grandFartherNode == null) {
             return RULE0;
         }
 
-        TreeNode grandFartherNode = fartherNode.getFartherNode();
+        // 儿子属于左支或右支
+        Integer childrenBelongLR = Objects.equals(fartherNode.getLeftChildren(), children) ? 0 : 1;
 
-        TreeNode uncleNode = null;
+        Integer fartherBelongLR = Objects.equals(grandFartherNode.getLeftChildren(), fartherNode) ? 0 : 1;
 
-        if (grandFartherNode != null) {
-            uncleNode =  Objects.equals(fartherNode, grandFartherNode.getLeftChildren())
-                    ? grandFartherNode.getRightChildren() : grandFartherNode.getLeftChildren();
-        }
+        TreeNode uncleNode  =  fartherBelongLR == 0 ? grandFartherNode.getRightChildren() : grandFartherNode.getLeftChildren();
 
 
 
         if (Objects.equals(fartherNode.getColor(), RedBlackConst.Color.BLACK)) {
             return RULE1;
         }else if (Objects.equals(fartherNode.getColor(), RedBlackConst.Color.RED)
-                && (uncleNode != null || Objects.equals(uncleNode.getColor(), RedBlackConst.Color.BLACK))) {
+                && fartherBelongLR == 0
+                && childrenBelongLR == 0
+                &&Objects.equals(uncleNode.getColor(), RedBlackConst.Color.BLACK)) {
             return RULE2;
+        }else if (Objects.equals(fartherNode.getColor(), RedBlackConst.Color.RED)
+                && fartherBelongLR == 1
+                && childrenBelongLR == 1
+                &&Objects.equals(uncleNode.getColor(), RedBlackConst.Color.BLACK)) {
+            return RULE3;
         }else if (Objects.equals(fartherNode.getColor(), RedBlackConst.Color.RED)
                 && (uncleNode != null || Objects.equals(uncleNode.getColor(), RedBlackConst.Color.RED))) {
             return RULE3;
@@ -209,6 +225,15 @@ public class RedBlackTree<T> {
         TreeNode<Integer> node5 = new TreeNode<>(1);
         TreeNode<Integer> node6 = new TreeNode<>(7);
         TreeNode<Integer> node7 = new TreeNode<>(8);
+
+        List<TreeNode<Integer>> nodeList = new ArrayList<>();
+        nodeList.add(node1);
+        nodeList.add(node2);
+        nodeList.add(node3);
+        nodeList.add(node4);
+        nodeList.add(node5);
+        nodeList.add(node6);
+        nodeList.add(node7);
 
         node1.setLeftChildren(node2);
         node2.setFartherNode(node1);
