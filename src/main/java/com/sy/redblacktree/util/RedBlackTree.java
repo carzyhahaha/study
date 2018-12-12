@@ -58,6 +58,23 @@ public class RedBlackTree<T> {
                 e.printStackTrace();
             }
             Integer rule = matchRule(children.getFartherNode(), children);
+
+            if (Objects.equals(rule, RULE0)) {
+                System.out.println(rule);
+            } else if (Objects.equals(rule, RULE1)) {
+                System.out.println(rule);
+            } else if (Objects.equals(rule, RULE2)) {
+                TreeNode fartherNode = children.getFartherNode();
+                changeColor(fartherNode, children);
+                Integer leftOrRight = Objects.equals(fartherNode.getLeftChildren(), children) ? 0 : 1;
+
+                if (leftOrRight == 0) {
+                    rightRotate(fartherNode, children);
+                } else {
+                    leftRotate(fartherNode, children);
+                }
+
+            }
             return true;
         }
 
@@ -85,10 +102,10 @@ public class RedBlackTree<T> {
         if (Objects.equals(fartherNode.getColor(), RedBlackConst.Color.BLACK)) {
             return RULE1;
         }else if (Objects.equals(fartherNode.getColor(), RedBlackConst.Color.RED)
-                && Objects.equals(uncleNode.getColor(), RedBlackConst.Color.BLACK)) {
+                && (uncleNode != null || Objects.equals(uncleNode.getColor(), RedBlackConst.Color.BLACK))) {
             return RULE2;
         }else if (Objects.equals(fartherNode.getColor(), RedBlackConst.Color.RED)
-                && Objects.equals(uncleNode.getColor(), RedBlackConst.Color.RED)) {
+                && (uncleNode != null || Objects.equals(uncleNode.getColor(), RedBlackConst.Color.RED))) {
             return RULE3;
         }
         return UNMATCH;
@@ -204,7 +221,8 @@ public class RedBlackTree<T> {
 
         int j = 2;
 
-//        leftRotate(node2, node4);
+//        lef
+// tRotate(node2, node4);
 
         RedBlackTree<Integer> redBlackTree = new RedBlackTree<>();
 
