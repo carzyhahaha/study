@@ -1,15 +1,15 @@
 package com.sy.redblacktree.util;
 
 import com.sun.javafx.css.Rule;
+import com.sun.org.apache.bcel.internal.generic.CHECKCAST;
 import com.sy.redblacktree.constant.RedBlackConst;
 import com.sy.redblacktree.exception.UnSupportException;
 import com.sy.redblacktree.model.TreeNode;
+import sun.plugin.com.event.COMEventHandler;
 import sun.reflect.generics.tree.Tree;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import javax.swing.*;
+import java.util.*;
 
 public class RedBlackTree<T> {
 
@@ -35,22 +35,37 @@ public class RedBlackTree<T> {
 
     private TreeNode<T> root;
 
+    /** 比较规则 **/
+    private Comparator<T> comparator;
+
+    public void setComparator(Comparator<T> comparator) {
+        this.comparator = comparator;
+    }
 //    RedBlackTree(T value) {
 //        root = new TreeNode<>(value);
 //    }
 
     public Boolean add(TreeNode children) {
 
-        try {
-            TreeNode farther = dfsTreeAndGetFartherNode(root, children);
-        } catch (UnSupportException e) {
-            e.printStackTrace();
+        if (root == null) {
+            root = children;
+            children.setColor(RedBlackConst.Color.BLACK);
+            return true;
+        } else {
+            try {
+                dfsTreeAndGetFartherNode(root, children);
+            } catch (UnSupportException e) {
+                e.printStackTrace();
+            }
+            Integer rule = matchRule(children.getFartherNode(), children);
+            return true;
         }
 
-        return true;
+
+
     }
 
-    private int insertRule(TreeNode fartherNode, TreeNode children) {
+    private int matchRule(TreeNode fartherNode, TreeNode children) {
 
         if (fartherNode == null) {
             return RULE0;
@@ -58,8 +73,13 @@ public class RedBlackTree<T> {
 
         TreeNode grandFartherNode = fartherNode.getFartherNode();
 
-        TreeNode uncleNode = Objects.equals(fartherNode, grandFartherNode.getLeftChildren())
-                ? grandFartherNode.getRightChildren() : grandFartherNode.getLeftChildren();
+        TreeNode uncleNode = null;
+
+        if (grandFartherNode != null) {
+            uncleNode =  Objects.equals(fartherNode, grandFartherNode.getLeftChildren())
+                    ? grandFartherNode.getRightChildren() : grandFartherNode.getLeftChildren();
+        }
+
 
 
         if (Objects.equals(fartherNode.getColor(), RedBlackConst.Color.BLACK)) {
@@ -72,7 +92,6 @@ public class RedBlackTree<T> {
             return RULE3;
         }
         return UNMATCH;
-
     }
 
     // 换色
@@ -142,33 +161,37 @@ public class RedBlackTree<T> {
     }
 
 
-    private static TreeNode dfsTreeAndGetFartherNode(TreeNode checkNode, TreeNode children) throws UnSupportException {
+    private void dfsTreeAndGetFartherNode(TreeNode<T> checkNode, TreeNode<T> children) throws UnSupportException {
 
-        // 如果到达叶子节点则停止
-        if (checkNode.getLeftChildren() == null || checkNode.getRightChildren() == null) {
-            return checkNode;
-        }
-
-        if (checkNode.compareTo(children.getValue()) > 1) {
-            dfsTreeAndGetFartherNode(checkNode.getRightChildren(), children);
-        } else if (checkNode.compareTo(children.getValue()) < 1) {
+        if (comparator.compare(checkNode.getValue(), children.getValue()) == 1) {
+            // 找到合适点, 插入
+            if (checkNode.getLeftChildren() == null) {
+                checkNode.setLeftChildren(children);
+                children.setFartherNode(checkNode);
+            }
             dfsTreeAndGetFartherNode(checkNode.getLeftChildren(), children);
-        } else {
-            throw new UnSupportException("unsupport the same value node");
+        } else if (comparator.compare(checkNode.getValue(), children.getValue()) == -1) {
+            if (checkNode.getRightChildren() == null) {
+                checkNode.setRightChildren(children);
+                children.setFartherNode(checkNode);
+            }
+            dfsTreeAndGetFartherNode(checkNode.getRightChildren(), children);
         }
 
-        return null;
     }
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnSupportException {
 
         RedBlackTree<Integer> root = new RedBlackTree<>();
 
-        TreeNode<Integer> node1 = new TreeNode<>(1);
-        TreeNode<Integer> node2 = new TreeNode<>(2);
-        TreeNode<Integer> node3 = new TreeNode<>(3);
+        TreeNode<Integer> node1 = new TreeNode<>(5);
+        TreeNode<Integer> node2 = new TreeNode<>(3);
+        TreeNode<Integer> node3 = new TreeNode<>(2);
         TreeNode<Integer> node4 = new TreeNode<>(4);
+        TreeNode<Integer> node5 = new TreeNode<>(1);
+        TreeNode<Integer> node6 = new TreeNode<>(7);
+        TreeNode<Integer> node7 = new TreeNode<>(8);
 
         node1.setLeftChildren(node2);
         node2.setFartherNode(node1);
@@ -181,7 +204,27 @@ public class RedBlackTree<T> {
 
         int j = 2;
 
-        leftRotate(node2, node4);
+//        leftRotate(node2, node4);
+
+        RedBlackTree<Integer> redBlackTree = new RedBlackTree<>();
+
+        redBlackTree.setComparator((Integer t1, Integer t2) -> {
+            if (t1 > t2) {
+                return 1;
+            }else if (t1 < t2) {
+                return -1;
+            }else {
+                return 0;
+            }
+        });
+
+        redBlackTree.add(node1);
+        redBlackTree.add(node2);
+        redBlackTree.add(node3);
+        redBlackTree.add(node4);
+        redBlackTree.add(node5);
+        redBlackTree.add(node6);
+        redBlackTree.add(node7);
 
         int i = 1;
     }

@@ -8,10 +8,6 @@ import java.util.Comparator;
 @Data
 public class TreeNode<T> {
 
-//    public TreeNode() {
-//
-//    }
-
     public TreeNode(T value) {
         this.value = value;
         this.color = color;
@@ -42,15 +38,6 @@ public class TreeNode<T> {
      */
     private TreeNode fartherNode;
 
-    /**
-     * 比较规则
-     */
-    private Comparator<T> comparator;
-
-    public Integer compareTo(T target) {
-        return comparator.compare(this.value, target);
-    }
-
 
     @Override
     public String toString() {
@@ -58,4 +45,5 @@ public class TreeNode<T> {
                 "value=" + value +
                 '}';
     }
+
 }
