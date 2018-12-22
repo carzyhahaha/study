@@ -2,7 +2,7 @@ package com.sy.redblacktree.constant;
 
 import java.awt.*;
 
-public class RedBlackConst {
+public class RedBlackTreeConst {
 
     public static final class Color {
 

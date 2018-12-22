@@ -1,14 +1,10 @@
 package com.sy.redblacktree.util;
 
-import com.sun.javafx.css.Rule;
-import com.sun.org.apache.bcel.internal.generic.CHECKCAST;
-import com.sy.redblacktree.constant.RedBlackConst;
+import com.sy.redblacktree.constant.RedBlackTreeConst;
 import com.sy.redblacktree.exception.UnSupportException;
 import com.sy.redblacktree.model.TreeNode;
-import sun.plugin.com.event.COMEventHandler;
-import sun.reflect.generics.tree.Tree;
+import sun.security.action.GetLongAction;
 
-import javax.swing.*;
 import java.util.*;
 
 public class RedBlackTree<T> {
@@ -38,7 +34,7 @@ public class RedBlackTree<T> {
 
     // 如果父亲节点为红色, 叔叔节点为红色, 吧祖父节点和父. 叔叔节点交换颜色,
     // 再把祖父节点看作插入的点, 调整树重新符合红黑树性质
-//    private static final int RULE4 = 4;
+    private static final int RULE6 = 6;
 
     private TreeNode<T> root;
 
@@ -48,15 +44,18 @@ public class RedBlackTree<T> {
     public void setComparator(Comparator<T> comparator) {
         this.comparator = comparator;
     }
+
 //    RedBlackTree(T value) {
 //        root = new TreeNode<>(value);
 //    }
 
     public Boolean add(TreeNode children) {
+        TreeNode fartherNode = children.getFartherNode();
+        TreeNode grandFartherNode = fartherNode.getFartherNode();
 
         if (root == null) {
             root = children;
-            children.setColor(RedBlackConst.Color.BLACK);
+            children.setColor(RedBlackTreeConst.Color.BLACK);
             return true;
         } else {
             try {
@@ -71,18 +70,25 @@ public class RedBlackTree<T> {
             } else if (Objects.equals(rule, RULE1)) {
                 System.out.println(rule);
             } else if (Objects.equals(rule, RULE2)) {
-                TreeNode fartherNode = children.getFartherNode();
-                changeColor(fartherNode, children);
-                Integer leftOrRight = Objects.equals(fartherNode.getLeftChildren(), children) ? 0 : 1;
-
-                if (leftOrRight == 0) {
-                    rightRotate(fartherNode, children);
-                } else {
-                    leftRotate(fartherNode, children);
-                }
-
+                changeColor(fartherNode, grandFartherNode);
+                rightRotate(grandFartherNode, fartherNode);
             } else if (Objects.equals(rule, RULE3)) {
-
+                changeColor(fartherNode, grandFartherNode);
+                leftRotate(grandFartherNode, fartherNode);
+            } else if (Objects.equals(rule, RULE4)) {
+                leftRotate(fartherNode, children);
+                changeColor(grandFartherNode, children);
+                rightRotate(grandFartherNode, children);
+            } else if (Objects.equals(rule, RULE5)) {
+                rightRotate(fartherNode, children);
+                changeColor(grandFartherNode, children);
+                leftRotate(grandFartherNode, children);
+            } else if (Objects.equals(rule, RULE6)) {
+                TreeNode uncleNode = Objects.equals(fartherNode, grandFartherNode.getLeftChildren())
+                        ? grandFartherNode.getRightChildren() : grandFartherNode.getLeftChildren();
+                grandFartherNode.setColor(RedBlackTreeConst.Color.RED);
+                fartherNode.setColor(RedBlackTreeConst.Color.BLACK);
+                uncleNode.setColor(RedBlackTreeConst.Color.BLACK);
             }
             return true;
         }
@@ -108,21 +114,28 @@ public class RedBlackTree<T> {
 
 
 
-        if (Objects.equals(fartherNode.getColor(), RedBlackConst.Color.BLACK)) {
+        if (Objects.equals(fartherNode.getColor(), RedBlackTreeConst.Color.BLACK)) {
             return RULE1;
-        }else if (Objects.equals(fartherNode.getColor(), RedBlackConst.Color.RED)
+        }else if (Objects.equals(fartherNode.getColor(), RedBlackTreeConst.Color.RED)
                 && fartherBelongLR == 0
                 && childrenBelongLR == 0
-                &&Objects.equals(uncleNode.getColor(), RedBlackConst.Color.BLACK)) {
+                && (uncleNode == null || Objects.equals(uncleNode.getColor(), RedBlackTreeConst.Color.BLACK))) {
             return RULE2;
-        }else if (Objects.equals(fartherNode.getColor(), RedBlackConst.Color.RED)
+        }else if (Objects.equals(fartherNode.getColor(), RedBlackTreeConst.Color.RED)
                 && fartherBelongLR == 1
                 && childrenBelongLR == 1
-                &&Objects.equals(uncleNode.getColor(), RedBlackConst.Color.BLACK)) {
+                && (uncleNode == null || Objects.equals(uncleNode.getColor(), RedBlackTreeConst.Color.BLACK))) {
             return RULE3;
-        }else if (Objects.equals(fartherNode.getColor(), RedBlackConst.Color.RED)
-                && (uncleNode != null || Objects.equals(uncleNode.getColor(), RedBlackConst.Color.RED))) {
-            return RULE3;
+        }else if (Objects.equals(fartherNode.getColor(), RedBlackTreeConst.Color.RED)
+                && fartherBelongLR == 0
+                && childrenBelongLR == 1
+                && (uncleNode == null || Objects.equals(uncleNode.getColor(), RedBlackTreeConst.Color.RED))) {
+            return RULE4;
+        }else if (Objects.equals(fartherNode.getColor(), RedBlackTreeConst.Color.RED)
+                && fartherBelongLR == 1
+                && childrenBelongLR == 0
+                && (uncleNode == null || Objects.equals(uncleNode.getColor(), RedBlackTreeConst.Color.RED))) {
+            return RULE5;
         }
         return UNMATCH;
     }
