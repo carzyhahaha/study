@@ -274,6 +274,35 @@ public class RedBlackTree<T> {
 
     }
 
+    private void del(TreeNode<T> delNode) {
+
+        TreeNode<T> fartherNode = delNode.getFartherNode();
+
+        Integer delNodeBelongLR = Objects.equals(fartherNode.getLeftChildren(), delNode) ? 0 : 1;
+
+        // 如果是叶子节点, 直接删除
+        if (Objects.isNull(delNode.getLeftChildren()) && Objects.isNull(delNode.getRightChildren())) {
+            if (fartherNode != null) {
+
+                if (delNodeBelongLR == 0) {
+                    fartherNode.setLeftChildren(null);
+                } else {
+                    fartherNode.setRightChildren(null);
+                }
+            }
+        } else {
+
+            TreeNode<T> rightBranchLeastNode = null;
+
+        }
+    }
+
+    /**
+     * 删除后的平衡
+     */
+    private void balanceAfterDel(TreeNode<T> delNodeFarther) {
+
+    }
 
     public static void main(String[] args) throws UnSupportException {
 
