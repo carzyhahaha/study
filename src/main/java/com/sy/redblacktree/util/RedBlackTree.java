@@ -312,9 +312,10 @@ public class RedBlackTree<T> {
             farther = successor.getFartherNode();
             color = successor.getColor();
 
-            if (farther == delNode) {
+           /* if (farther == delNode) {
                 farther = successor;
-            } else {
+            } else*/
+           if (farther != delNode){
                 if (successorChild != null) {
                     successorChild.setFartherNode(farther);
                 }
