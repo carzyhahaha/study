@@ -78,27 +78,27 @@ public class RedBlackTree<T> {
             } else if (Objects.equals(rule, RULE1)) {
             } else if (Objects.equals(rule, RULE2)) {
                 changeColor(fartherNode, grandFartherNode);
-                rightRotate(grandFartherNode, fartherNode);
+                rightRotate(grandFartherNode);
                 if (Objects.equals(grandFartherNode, root)) {
                     root = fartherNode;
                 }
             } else if (Objects.equals(rule, RULE3)) {
                 changeColor(fartherNode, grandFartherNode);
-                leftRotate(grandFartherNode, fartherNode);
+                leftRotate(grandFartherNode);
                 if (Objects.equals(grandFartherNode, root)) {
                     root = fartherNode;
                 }
             } else if (Objects.equals(rule, RULE4)) {
-                leftRotate(fartherNode, children);
+                leftRotate(fartherNode);
                 changeColor(grandFartherNode, children);
-                rightRotate(grandFartherNode, children);
+                rightRotate(grandFartherNode);
                 if (Objects.equals(grandFartherNode, root)) {
                     root = children;
                 }
             } else if (Objects.equals(rule, RULE5)) {
-                rightRotate(fartherNode, children);
+                rightRotate(fartherNode);
                 changeColor(grandFartherNode, children);
-                leftRotate(grandFartherNode, children);
+                leftRotate(grandFartherNode);
                 if (Objects.equals(grandFartherNode, root)) {
                     root = children;
                 }
@@ -176,9 +176,9 @@ public class RedBlackTree<T> {
             Integer affectNodeBelongLR = Objects.equals(affectNodeFarther.getLeftChildren(), affectNode) ? 0 : 1;
 
             if (affectNodeBelongLR == 0) {
-                rightRotate(affectNodeGrand, affectNodeFarther);
+                rightRotate(affectNodeGrand);
             } else {
-                leftRotate(affectNodeGrand, affectNodeFarther);
+                leftRotate(affectNodeGrand);
             }
 
             if (Objects.equals(affectNodeGrand, root)) {
@@ -203,10 +203,12 @@ public class RedBlackTree<T> {
     }
 
     // 左旋
-    private static void leftRotate(TreeNode fartherNode, TreeNode rightChildrenNode) {
+    private static void leftRotate(TreeNode fartherNode) {
 
         // 祖父节点
         TreeNode grandFartherNode = fartherNode.getFartherNode();
+
+        TreeNode rightChildrenNode = fartherNode.getRightChildren();
 
         // 右子树的左节点
         TreeNode rightChilLeftOff = rightChildrenNode.getLeftChildren();
@@ -232,10 +234,12 @@ public class RedBlackTree<T> {
     }
 
     // 右旋
-    private static void rightRotate(TreeNode fartherNode, TreeNode leftChildrenNode) {
+    private static void rightRotate(TreeNode fartherNode) {
 
         // 祖父节点
         TreeNode grandFartherNode = fartherNode.getFartherNode();
+
+        TreeNode leftChildrenNode = fartherNode.getLeftChildren();
 
         // 左子树的右节点
         TreeNode leftChilRightOff = leftChildrenNode.getRightChildren();
@@ -311,13 +315,20 @@ public class RedBlackTree<T> {
             if (farther == delNode) {
                 farther = successor;
             } else {
+                if (successorChild != null) {
+                    successorChild.setFartherNode(farther);
+                }
                 farther.setLeftChildren(successorChild);
                 successor.setRightChildren(delNode.getRightChildren());
+                delNode.getRightChildren().setFartherNode(successor);
             }
             successor.setFartherNode(delNode.getFartherNode());
             successor.setColor(delNode.getColor());
             successor.setLeftChildren(delNode.getLeftChildren());
             delNode.getLeftChildren().setFartherNode(successor);
+
+            //方便下边统一处理 无关算法
+            successor = successorChild;
         } else {
             if (delNode.getLeftChildren() != null) {
                 successor = delNode.getLeftChildren();
@@ -365,28 +376,37 @@ public class RedBlackTree<T> {
                     // 兄弟节点是红色
                     setBlack(borther);
                     setRed(farther);
-                    leftRotate(farther, borther);
+                    leftRotate(farther);
+                    borther = farther.getRightChildren();
                 }
 
                 if (isBlack(borther) && borther.getLeftChildren() == null || isBlack(borther.getLeftChildren()) &&
                         (borther.getRightChildren() == null || isBlack(borther.getRightChildren()))) {
                     // 兄弟节点是黑色, 并且其两个儿子都是黑色(或nil)
                     setRed(borther);
-                    farther = node.getFartherNode().getFartherNode();
+                    node = farther;
+                    farther = node.getFartherNode();
                 } else {
                     if (borther.getRightChildren() == null || isBlack(borther.getRightChildren())) {
                         // 兄弟节点是黑色, 并且其左儿子是红色, 右儿子是黑色
                         setBlack(borther.getLeftChildren());
                         setRed(borther);
-                        rightRotate(borther, borther.getLeftChildren());
-                        borther = farther.getRightChildren();
+                        rightRotate(borther);
+                        borther = farther.getLeftChildren();
                     }
                     // 此时兄弟节点是黑色, 其右儿子为红色, 左儿子任意颜色
-                    setBlack(borther.getRightChildren());
-                    leftRotate(farther, borther);
-
+                    borther.setColor(farther.getColor());
+                    setBlack(farther);
+                    setBlack(borther.getLeftChildren());
+                    rightRotate(farther);
+                    node = root;
+                    break;
                 }
             }
+        }
+
+        if (node != null) {
+            setBlack(node);
         }
     }
 
