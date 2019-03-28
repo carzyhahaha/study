@@ -3,9 +3,14 @@ package com.sy.redblacktree.util;
 import com.sy.redblacktree.constant.RedBlackTreeConst;
 import com.sy.redblacktree.exception.UnSupportException;
 import com.sy.redblacktree.model.TreeNode;
+import javafx.scene.Parent;
+import org.omg.PortableInterceptor.SUCCESSFUL;
 import sun.security.action.GetLongAction;
 
+import javax.xml.soap.Node;
+import java.nio.channels.ReadableByteChannel;
 import java.util.*;
+import java.util.concurrent.RecursiveAction;
 
 public class RedBlackTree<T> {
 
@@ -275,34 +280,133 @@ public class RedBlackTree<T> {
     }
 
     private void del(TreeNode<T> delNode) {
+        TreeNode<T> successor = null;
+        TreeNode<T> farther = null;
+        TreeNode<T> successorChild = null;
+        Integer color = null;
 
-        TreeNode<T> fartherNode = delNode.getFartherNode();
+        if (delNode.getLeftChildren() != null && delNode.getRightChildren() != null) {
 
-        Integer delNodeBelongLR = Objects.equals(fartherNode.getLeftChildren(), delNode) ? 0 : 1;
-
-        // 如果是叶子节点, 直接删除
-        if (Objects.isNull(delNode.getLeftChildren()) && Objects.isNull(delNode.getRightChildren())) {
-            if (fartherNode != null) {
-
-                if (delNodeBelongLR == 0) {
-                    fartherNode.setLeftChildren(null);
-                } else {
-                    fartherNode.setRightChildren(null);
-                }
+            farther = delNode.getFartherNode();
+            // 获取后继节点 (右子树的最左子)
+            successor = delNode.getRightChildren();
+            while (successor.getLeftChildren() != null) {
+                successor = successor.getLeftChildren();
             }
+
+            if (farther != null) {
+                if (Objects.equals(delNode, farther.getLeftChildren())) {
+                    farther.setLeftChildren(successor);
+                } else {
+                    farther.setLeftChildren(successor);
+                }
+            } else {
+                root = successor;
+            }
+
+            successorChild = successor.getRightChildren();
+            farther = successor.getFartherNode();
+            color = successor.getColor();
+
+            if (farther == delNode) {
+                farther = successor;
+            } else {
+                farther.setLeftChildren(successorChild);
+                successor.setRightChildren(delNode.getRightChildren());
+            }
+            successor.setFartherNode(delNode.getFartherNode());
+            successor.setColor(delNode.getColor());
+            successor.setLeftChildren(delNode.getLeftChildren());
+            delNode.getLeftChildren().setFartherNode(successor);
         } else {
+            if (delNode.getLeftChildren() != null) {
+                successor = delNode.getLeftChildren();
+            } else {
+                successor = delNode.getRightChildren();
+            }
 
-            TreeNode<T> rightBranchLeastNode = null;
+            farther = delNode.getFartherNode();
+            color = delNode.getColor();
 
+            if (successor != null) {
+                successor.setFartherNode(farther);
+            }
+
+            if (farther != null) {
+                if (Objects.equals(farther, delNode)) {
+                    farther.setLeftChildren(successor);
+                } else {
+                    farther.setRightChildren(successor);
+                }
+            } else {
+                root = successor;
+            }
         }
+
+        if (color == RedBlackTreeConst.Color.BLACK) {
+            balanceAfterDel(successor);
+        }
+
+        delNode = null;
+        return;
     }
 
     /**
      * 删除后的平衡
      */
-    private void balanceAfterDel(TreeNode<T> delNodeFarther) {
+    private void balanceAfterDel(TreeNode<T> node) {
+        TreeNode<T> farther = node.getFartherNode();
+        TreeNode<T> borther = null;
+        while ((node == null || isBlack(node)) && (node != root)) {
+            if (farther.getLeftChildren() == node) {
+                borther = farther.getRightChildren();
 
+                if (isRed(borther)) {
+                    // 兄弟节点是红色
+                    setBlack(borther);
+                    setRed(farther);
+                    leftRotate(farther, borther);
+                }
+
+                if (isBlack(borther) && borther.getLeftChildren() == null || isBlack(borther.getLeftChildren()) &&
+                        (borther.getRightChildren() == null || isBlack(borther.getRightChildren()))) {
+                    // 兄弟节点是黑色, 并且其两个儿子都是黑色(或nil)
+                    setRed(borther);
+                    farther = node.getFartherNode().getFartherNode();
+                } else {
+                    if (borther.getRightChildren() == null || isBlack(borther.getRightChildren())) {
+                        // 兄弟节点是黑色, 并且其左儿子是红色, 右儿子是黑色
+                        setBlack(borther.getLeftChildren());
+                        setRed(borther);
+                        rightRotate(borther, borther.getLeftChildren());
+                        borther = farther.getRightChildren();
+                    }
+                    // 此时兄弟节点是黑色, 其右儿子为红色, 左儿子任意颜色
+                    setBlack(borther.getRightChildren());
+                    leftRotate(farther, borther);
+
+                }
+            }
+        }
     }
+
+    private boolean isBlack(TreeNode<T> node) {
+        return Objects.equals(RedBlackTreeConst.Color.BLACK, node.getColor());
+    }
+
+    private boolean isRed(TreeNode<T> node) {
+        return Objects.equals(RedBlackTreeConst.Color.RED, node.getColor());
+    }
+
+    private void setBlack(TreeNode<T> node) {
+        node.setColor(RedBlackTreeConst.Color.BLACK);
+    }
+
+    private void setRed(TreeNode<T> node) {
+        node.setColor(RedBlackTreeConst.Color.RED);
+    }
+
+
 
     public static void main(String[] args) throws UnSupportException {
 
