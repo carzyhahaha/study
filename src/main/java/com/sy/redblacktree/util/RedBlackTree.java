@@ -3,16 +3,8 @@ package com.sy.redblacktree.util;
 import com.sy.redblacktree.constant.RedBlackTreeConst;
 import com.sy.redblacktree.exception.UnSupportException;
 import com.sy.redblacktree.model.TreeNode;
-import javafx.scene.Parent;
-import org.omg.PortableInterceptor.SUCCESSFUL;
-import sun.security.action.GetLongAction;
 
-import javax.xml.soap.Node;
-import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.RecursiveAction;
 
 public class RedBlackTree<T> {
 
@@ -56,12 +48,8 @@ public class RedBlackTree<T> {
         this.comparator = comparator;
     }
 
-//    RedBlackTree(T value) {
-//        root = new TreeNode<>(value);
-//    }
 
     public Boolean add(TreeNode children) {
-
 
         if (root == null) {
             root = children;
@@ -79,8 +67,6 @@ public class RedBlackTree<T> {
             if (Objects.equals(rule, RULE0)) {
             } else if (Objects.equals(rule, RULE1)) {
             } else if (Objects.equals(rule, RULE2)) {
-                System.out.println(2);
-
                 changeColor(fartherNode, grandFartherNode);
                 rightRotate(grandFartherNode);
                 if (Objects.equals(grandFartherNode, root)) {
@@ -92,16 +78,12 @@ public class RedBlackTree<T> {
                 fartherNode.getRightChildren().setColor(RedBlackTreeConst.Color.BLACK);
                 doWhenRule6RecurveBalance(fartherNode);
             } else if (Objects.equals(rule, RULE3)) {
-                System.out.println(3);
-
                 changeColor(fartherNode, grandFartherNode);
                 leftRotate(grandFartherNode);
                 if (Objects.equals(grandFartherNode, root)) {
                     root = fartherNode;
                 }
             } else if (Objects.equals(rule, RULE4)) {
-                System.out.println(4);
-
                 leftRotate(fartherNode);
                 changeColor(grandFartherNode, children);
                 rightRotate(grandFartherNode);
@@ -109,7 +91,6 @@ public class RedBlackTree<T> {
                     root = children;
                 }
             } else if (Objects.equals(rule, RULE5)) {
-                System.out.println(5);
                 rightRotate(fartherNode);
                 changeColor(grandFartherNode, children);
                 leftRotate(grandFartherNode);
@@ -117,7 +98,6 @@ public class RedBlackTree<T> {
                     root = children;
                 }
             } else if (Objects.equals(rule, RULE6)) {
-                System.out.println(6);
                 TreeNode uncleNode = Objects.equals(fartherNode, grandFartherNode.getLeftChildren())
                         ? grandFartherNode.getRightChildren() : grandFartherNode.getLeftChildren();
                 grandFartherNode.setColor(RedBlackTreeConst.Color.RED);
@@ -132,6 +112,12 @@ public class RedBlackTree<T> {
 
     }
 
+    /**
+     * 匹配调整规则
+     * @param fartherNode
+     * @param children
+     * @return
+     */
     private int matchRule(TreeNode fartherNode, TreeNode children) {
 
         TreeNode grandFartherNode = fartherNode.getFartherNode();
@@ -275,6 +261,8 @@ public class RedBlackTree<T> {
 
         fartherNode.setLeftChildren(leftChilRightOff);
         fartherNode.setFartherNode(leftChildrenNode);
+        if (leftChilRightOff != null)
+            leftChilRightOff.setFartherNode(fartherNode);
         leftChildrenNode.setRightChildren(fartherNode);
     }
 
@@ -298,6 +286,8 @@ public class RedBlackTree<T> {
 
     }
 
+
+    // 删除节点
     private void del(TreeNode<T> delNode) {
         TreeNode<T> successor = null;
         TreeNode<T> farther = null;
@@ -309,9 +299,12 @@ public class RedBlackTree<T> {
             farther = delNode.getFartherNode();
             // 获取后继节点 (右子树的最左子)
             successor = delNode.getRightChildren();
+
             while (successor.getLeftChildren() != null) {
                 successor = successor.getLeftChildren();
             }
+
+            System.out.println("successor = " + successor);
 
             if (farther != null) {
                 if (Objects.equals(delNode, farther.getLeftChildren())) {
@@ -323,14 +316,14 @@ public class RedBlackTree<T> {
                 root = successor;
             }
 
+
             successorChild = successor.getRightChildren();
             farther = successor.getFartherNode();
             color = successor.getColor();
 
-           /* if (farther == delNode) {
+            if (farther == delNode) {
                 farther = successor;
-            } else*/
-           if (farther != delNode){
+            } else {
                 if (successorChild != null) {
                     successorChild.setFartherNode(farther);
                 }
@@ -346,6 +339,7 @@ public class RedBlackTree<T> {
             //方便下边统一处理 无关算法
             successor = successorChild;
         } else {
+            System.out.println(delNode);
             if (delNode.getLeftChildren() != null) {
                 successor = delNode.getLeftChildren();
             } else {
@@ -353,6 +347,7 @@ public class RedBlackTree<T> {
             }
 
             farther = delNode.getFartherNode();
+            System.out.println("farther = " + farther);
             color = delNode.getColor();
 
             if (successor != null) {
@@ -360,7 +355,7 @@ public class RedBlackTree<T> {
             }
 
             if (farther != null) {
-                if (Objects.equals(farther, delNode)) {
+                if (Objects.equals(farther.getLeftChildren(), delNode)) {
                     farther.setLeftChildren(successor);
                 } else {
                     farther.setRightChildren(successor);
@@ -370,9 +365,9 @@ public class RedBlackTree<T> {
             }
         }
 
-        if (color == RedBlackTreeConst.Color.BLACK) {
-            balanceAfterDel(successor);
-        }
+//        if (color == RedBlackTreeConst.Color.BLACK) {
+//            balanceAfterDel(successor, farther);
+//        }
 
         delNode = null;
         return;
@@ -381,11 +376,11 @@ public class RedBlackTree<T> {
     /**
      * 删除后的平衡
      */
-    private void balanceAfterDel(TreeNode<T> node) {
-        TreeNode<T> farther = node.getFartherNode();
+    private void balanceAfterDel(TreeNode<T> node, TreeNode<T> farther) {
+
         TreeNode<T> borther = null;
         while ((node == null || isBlack(node)) && (node != root)) {
-            if (farther.getLeftChildren() == node) {
+            if (Objects.equals(farther.getLeftChildren(), node)) {
                 borther = farther.getRightChildren();
 
                 if (isRed(borther)) {
@@ -414,10 +409,41 @@ public class RedBlackTree<T> {
                     borther.setColor(farther.getColor());
                     setBlack(farther);
                     setBlack(borther.getLeftChildren());
-                    rightRotate(farther);
+                    leftRotate(farther);
                     node = root;
                     break;
                 }
+            } else {
+
+               borther = farther.getLeftChildren();
+               if (isRed(borther)) {
+                   setBlack(borther);
+                   setRed(farther);
+                   rightRotate(farther);
+                   borther = farther.getLeftChildren();
+               }
+
+               if ((borther.getLeftChildren() == null || isBlack(borther.getLeftChildren()))
+                       && (borther.getRightChildren() == null || isBlack(borther.getRightChildren()))) {
+                       setRed(borther);
+                       node = farther;
+                       farther = node.getFartherNode();
+               } else {
+                   if (borther.getLeftChildren() == null || isBlack(borther.getLeftChildren())) {
+                       setBlack(borther.getRightChildren());
+                       setRed(borther);
+                       leftRotate(borther);
+                       borther = farther.getLeftChildren();
+                   }
+
+                   borther.setColor(farther.getColor());
+                   setBlack(farther);
+                   setBlack(borther.getLeftChildren());
+                   rightRotate(farther);
+                   node = root;
+                   break;
+               }
+
             }
         }
 
@@ -442,32 +468,6 @@ public class RedBlackTree<T> {
         node.setColor(RedBlackTreeConst.Color.RED);
     }
 
-
-
-    public static void main(String[] args) throws UnSupportException {
-
-//        System.out.println(Math.pow(2, 0));
-
-        RedBlackTree<Integer> redBlackTree = new RedBlackTree<>();
-        for (int i=11; i>=1; i--) {
-            TreeNode<Integer> treeNode = new TreeNode<>(i);
-            treeNode.setColor(RedBlackTreeConst.Color.RED);
-            redBlackTree.setComparator((Integer e1, Integer e2)->{
-                if (e1 < e2) {
-                    return 1;
-                } else if (e1 > e2){
-                    return -1;
-                }
-                return 0;
-            });
-            redBlackTree.add(treeNode);
-        }
-
-
-        System.out.println(bfs(redBlackTree.root));
-
-    }
-
     static class BfsNode<T> {
 
         BfsNode(TreeNode<T> node, Integer floor) {
@@ -478,16 +478,19 @@ public class RedBlackTree<T> {
         Integer floor;
     }
 
-    static Integer bfs(TreeNode<Integer> root) {
-        ArrayDeque<BfsNode<Integer>> que = new ArrayDeque<>();
+    public Integer showTree() {
+
+        TreeNode<T> root = this.root;
+
+        ArrayDeque<BfsNode<T>> que = new ArrayDeque<>();
 
         que.add(new BfsNode<>(root, 1));
 
         Integer index = 1;
         Integer sum = 0;
         while (!que.isEmpty()) {
-           BfsNode<Integer> bfsNode = que.pop();
-           TreeNode<Integer> thisNode = bfsNode.node;
+           BfsNode<T> bfsNode = que.pop();
+           TreeNode<T> thisNode = bfsNode.node;
             Integer floor = bfsNode.floor;
             if (thisNode.getLeftChildren() != null){
                 que.add(new BfsNode<>(thisNode.getLeftChildren(), floor+1));
@@ -499,22 +502,58 @@ public class RedBlackTree<T> {
                 System.out.println();
                 index = floor;
             }
-            System.out.printf("%8s","["+thisNode.getValue()+","+(thisNode.getColor() == 0 ? "红" : "黑")+"]");
-
+            System.out.printf("%15s","["+thisNode.getValue()+","+ (thisNode.getFartherNode() == null  ? "0" : thisNode.getFartherNode().getValue())
+                    +","+(thisNode.getColor() == 0 ? "红" : "黑")+"]");
 
             sum ++;
         }
-
+        System.out.println();
+        System.out.println();
         return index;
     }
 
-
-    public void showTree(TreeNode<Integer> treeNode) {
-
-        int count = 0;
-
-        bfs(treeNode);
+    public TreeNode<T> find(T t) {
+        return dfsFind(root, t);
     }
 
+    private TreeNode<T> dfsFind(TreeNode<T> node, T t) {
+        if (node == null) {
+            return null;
+        }
+        Integer compareRes = comparator.compare(node.getValue(), t);
+
+        if (compareRes == -1) {
+            return dfsFind(node.getLeftChildren(), t);
+        } else if (compareRes == 1){
+            return dfsFind(node.getRightChildren(), t);
+        }
+
+        return node;
+    }
+
+    public static void main(String[] args) throws UnSupportException {
+
+        RedBlackTree<Integer> redBlackTree = new RedBlackTree<>();
+        redBlackTree.setComparator((Integer e1, Integer e2)->{
+            if (e1 < e2) {
+                return 1;
+            } else if (e1 > e2){
+                return -1;
+            }
+            return 0;
+        });
+        redBlackTree.add(new TreeNode(10));
+        redBlackTree.add(new TreeNode(9));
+        redBlackTree.add(new TreeNode(8));
+        redBlackTree.add(new TreeNode(7));
+        redBlackTree.add(new TreeNode(6));
+        redBlackTree.add(new TreeNode(5));
+        redBlackTree.add(new TreeNode(4));
+        redBlackTree.add(new TreeNode(3));
+        redBlackTree.add(new TreeNode(2));
+        redBlackTree.showTree();
+        redBlackTree.del(redBlackTree.find(8));
+        redBlackTree.showTree();
+    }
 
 }

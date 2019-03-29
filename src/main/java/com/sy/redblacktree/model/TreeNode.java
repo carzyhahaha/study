@@ -1,5 +1,6 @@
 package com.sy.redblacktree.model;
 
+import com.sy.redblacktree.constant.RedBlackTreeConst;
 import lombok.Data;
 
 import java.awt.*;
@@ -10,7 +11,7 @@ public class TreeNode<T> {
 
     public TreeNode(T value) {
         this.value = value;
-        this.color = color;
+        this.color = RedBlackTreeConst.Color.RED;
     }
 
     /**
@@ -43,7 +44,10 @@ public class TreeNode<T> {
     public String toString() {
         return "TreeNode{" +
                 "value=" + value +
+                ", color=" + color +
+                ", leftChildren=" + (leftChildren == null ? "null" : leftChildren.getValue()) +
+                ", rightChildren=" + (rightChildren == null ? "null" : rightChildren.getValue()) +
+                ", fartherNode=" + (fartherNode == null ? "null" : fartherNode.getValue()) +
                 '}';
     }
-
 }
