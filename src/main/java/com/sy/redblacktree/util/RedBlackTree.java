@@ -8,8 +8,10 @@ import org.omg.PortableInterceptor.SUCCESSFUL;
 import sun.security.action.GetLongAction;
 
 import javax.xml.soap.Node;
+import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.RecursiveAction;
 
 public class RedBlackTree<T> {
@@ -434,7 +436,7 @@ public class RedBlackTree<T> {
 //        System.out.println(Math.pow(2, 0));
 
         RedBlackTree<Integer> redBlackTree = new RedBlackTree<>();
-        for (int i=256; i>=1; i--) {
+        for (int i=7; i>=1; i--) {
             TreeNode<Integer> treeNode = new TreeNode<>(i);
             treeNode.setColor(RedBlackTreeConst.Color.RED);
             redBlackTree.setComparator((Integer e1, Integer e2)->{
@@ -448,36 +450,58 @@ public class RedBlackTree<T> {
             redBlackTree.add(treeNode);
         }
 
-        bfs(redBlackTree.getRoot());
+
+        System.out.println(bfs(redBlackTree.root));
+
     }
 
-    static void bfs(TreeNode<Integer> root) {
-        ArrayDeque<TreeNode<Integer>> que = new ArrayDeque<>();
+    static class BfsNode<T> {
 
-        que.add(root);
+        BfsNode(TreeNode<T> node, Integer floor) {
+            this.node = node;
+            this.floor = floor;
+        }
+        TreeNode<T> node;
+        Integer floor;
+    }
 
-        Integer lay = 1;
-        Integer index = 0;
+    static Integer bfs(TreeNode<Integer> root) {
+        ArrayDeque<BfsNode<Integer>> que = new ArrayDeque<>();
+
+        que.add(new BfsNode<>(root, 1));
+
+        Integer index = 1;
+        Integer sum = 0;
         while (!que.isEmpty()) {
-            TreeNode<Integer> thisNode = que.pop();
+           BfsNode<Integer> bfsNode = que.pop();
+           TreeNode<Integer> thisNode = bfsNode.node;
+            Integer floor = bfsNode.floor;
             if (thisNode.getLeftChildren() != null){
-                que.add(thisNode.getLeftChildren());
+                que.add(new BfsNode<>(thisNode.getLeftChildren(), floor+1));
             }
             if (thisNode.getRightChildren() != null) {
-            que.add(thisNode.getRightChildren());
+            que.add(new BfsNode<>(thisNode.getRightChildren(), floor+1));
             }
-            System.out.print("["+thisNode.getValue()+","+(thisNode.getColor() == 0 ? "红" : "黑")+"]");
-             ++ index;
-            int cap = (int) Math.pow(2,lay);
-            if (cap-1 == index) {
+            if (index != floor) {
                 System.out.println();
-                lay ++;
+                index = floor;
             }
+            System.out.printf("%8s","["+thisNode.getValue()+","+(thisNode.getColor() == 0 ? "红" : "黑")+"]");
 
+
+            sum ++;
         }
 
+        return index;
     }
 
+
+    public void showTree(TreeNode<Integer> treeNode) {
+
+        int count = 0;
+
+        bfs(treeNode);
+    }
 
 
 }
