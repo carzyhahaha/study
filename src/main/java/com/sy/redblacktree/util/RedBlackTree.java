@@ -79,18 +79,29 @@ public class RedBlackTree<T> {
             if (Objects.equals(rule, RULE0)) {
             } else if (Objects.equals(rule, RULE1)) {
             } else if (Objects.equals(rule, RULE2)) {
+                System.out.println(2);
+
                 changeColor(fartherNode, grandFartherNode);
                 rightRotate(grandFartherNode);
                 if (Objects.equals(grandFartherNode, root)) {
                     root = fartherNode;
                 }
+
+                fartherNode.setColor(RedBlackTreeConst.Color.RED);
+                fartherNode.getLeftChildren().setColor(RedBlackTreeConst.Color.BLACK);
+                fartherNode.getRightChildren().setColor(RedBlackTreeConst.Color.BLACK);
+                doWhenRule6RecurveBalance(fartherNode);
             } else if (Objects.equals(rule, RULE3)) {
+                System.out.println(3);
+
                 changeColor(fartherNode, grandFartherNode);
                 leftRotate(grandFartherNode);
                 if (Objects.equals(grandFartherNode, root)) {
                     root = fartherNode;
                 }
             } else if (Objects.equals(rule, RULE4)) {
+                System.out.println(4);
+
                 leftRotate(fartherNode);
                 changeColor(grandFartherNode, children);
                 rightRotate(grandFartherNode);
@@ -98,6 +109,7 @@ public class RedBlackTree<T> {
                     root = children;
                 }
             } else if (Objects.equals(rule, RULE5)) {
+                System.out.println(5);
                 rightRotate(fartherNode);
                 changeColor(grandFartherNode, children);
                 leftRotate(grandFartherNode);
@@ -105,6 +117,7 @@ public class RedBlackTree<T> {
                     root = children;
                 }
             } else if (Objects.equals(rule, RULE6)) {
+                System.out.println(6);
                 TreeNode uncleNode = Objects.equals(fartherNode, grandFartherNode.getLeftChildren())
                         ? grandFartherNode.getRightChildren() : grandFartherNode.getLeftChildren();
                 grandFartherNode.setColor(RedBlackTreeConst.Color.RED);
@@ -436,7 +449,7 @@ public class RedBlackTree<T> {
 //        System.out.println(Math.pow(2, 0));
 
         RedBlackTree<Integer> redBlackTree = new RedBlackTree<>();
-        for (int i=7; i>=1; i--) {
+        for (int i=11; i>=1; i--) {
             TreeNode<Integer> treeNode = new TreeNode<>(i);
             treeNode.setColor(RedBlackTreeConst.Color.RED);
             redBlackTree.setComparator((Integer e1, Integer e2)->{
